@@ -358,9 +358,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
        public int set(int address, int value, int length) throws AddressErrorException {
          int oldValue = 0;
          if (Globals.debug) System.out.println("memory["+address+"] set to "+value+"("+length+" bytes)");
-         // TIME@PC: *ADDR <= DATA
-         SystemIO.printString("@" + String.format("%08x", RegisterFile.getProgramCounter() - 4) + ": *" +
-                 String.format("%08x", address) + " <= " + String.format("%08x", value) + "\n");
          int relativeByteAddress;
          if (inDataSegment(address)) {
            // in data segment.  Will write one byte at a time, w/o regard to boundaries.
@@ -411,6 +408,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             throw new AddressErrorException("address out of range ",
                Exceptions.ADDRESS_EXCEPTION_STORE, address);
          }
+       // TIME@PC: *ADDR <= DATA
+       SystemIO.printString("@" + String.format("%08x", RegisterFile.getProgramCounter() - 4) + ": *" +
+               String.format("%08x", ((address >> 2) << 2)) + " <= " + String.format("%08x", getRawWord(((address >> 2) << 2))) + "\n");
          notifyAnyObservers(AccessNotice.WRITE, address, length, value);
          return oldValue;
       }
