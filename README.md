@@ -61,15 +61,20 @@ Based on [Mars](http://courses.missouristate.edu/kenvollmar/mars/)
 
 修改点位于 `mars.mips.hardware.Memory` ，同理，PC值应手动减4 。
 
+注意：要求的内存输出信息是对**字**的写入，对于 `sb` 或者 `sh` 指令，应该输出的是要写入的字节/半字与内存中原有的字的拼接。所以这里首先要对地址 `address` 按字截断（先右移2位再左移2位），然后可以借用 `getRawWord` 这个方法取出刚写入内存的这个字。
+
 ```java
       public int set(int address, int value, int length) throws AddressErrorException {
          int oldValue = 0;
          if (Globals.debug) System.out.println("memory["+address+"] set to "+value+"("+length+" bytes)");
-         // TIME@PC: *ADDR <= DATA
-         SystemIO.printString("@" + String.format("%08x", RegisterFile.getProgramCounter() - 4) + ": *" +
-                 String.format("%08x", address) + " <= " + String.format("%08x", value) + "\n");
          int relativeByteAddress;
-         // omitted some code ......
+         /* 
+          * omitted some code ......
+          */
+          // TIME@PC: *ADDR <= DATA
+         SystemIO.printString("@" + String.format("%08x", RegisterFile.getProgramCounter() - 4) + ": *" +
+               String.format("%08x", ((address >> 2) << 2)) + " <= " + String.format("%08x", getRawWord(((address >> 2) << 2))) + "\n");
+          notifyAnyObservers(AccessNotice.WRITE, address, length, value);
          return oldValue;
       }
 ```
